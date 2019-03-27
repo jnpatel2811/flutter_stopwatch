@@ -7,7 +7,8 @@ class HomeWidget extends StatefulWidget {
   _HomeWidgetState createState() => _HomeWidgetState();
 }
 
-class _HomeWidgetState extends State<HomeWidget> {
+class _HomeWidgetState extends State<HomeWidget>
+    with SingleTickerProviderStateMixin {
   String _stopwatchText = "00:00:00";
   String _buttonText = _textSTART;
 
@@ -17,6 +18,34 @@ class _HomeWidgetState extends State<HomeWidget> {
   static final _textSTOP = "Stop";
   static final _textSTART = "Start";
   static final _textReset = "Reset";
+
+  AnimationController _animationController;
+  Animation _colorAnimation;
+
+
+  @override
+  void initState() {
+    super.initState();
+    _animationController =
+        AnimationController(vsync: this, duration: Duration(seconds: 1));
+    _colorAnimation =
+        ColorTween(begin: Color(0xff3CA55C), end: Color(0xffB5AC49))
+            .animate(_animationController);
+
+    _animationController.addStatusListener((status) {
+      if (status == AnimationStatus.completed) {
+        _animationController.reverse();
+      } else if (status == AnimationStatus.dismissed) {
+        _animationController.forward();
+      }
+    });
+  }
+
+  @override
+  void dispose() {
+    super.dispose();
+    _animationController.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -29,36 +58,50 @@ class _HomeWidgetState extends State<HomeWidget> {
   }
 
   Widget _buildBody() {
-    return Padding(
-      padding: const EdgeInsets.all(16.0),
-      child: Column(
-        children: <Widget>[
-          Center(
-            child: Column(
-              children: <Widget>[
-                RaisedButton(
-                  onPressed: _startStopBtnClicked,
-                  child: Text(_buttonText),
-                ),
-                RaisedButton(
-                  onPressed: _resetBtnClicked,
-                  child: Text(_textReset),
-                ),
-              ],
+    return Container(
+      color: _colorAnimation.value,
+      /*decoration: BoxDecoration(
+          gradient: LinearGradient(
+            colors: [Color(0xff3CA55C), Color(0xffB5AC49)],
+            begin: Alignment.bottomCenter,
+          )),*/
+      child: Padding(
+        padding: const EdgeInsets.all(16.0),
+        child: Column(
+          children: <Widget>[
+            Center(
+              child: Column(
+                children: <Widget>[
+                  RaisedButton(
+                    onPressed: _startStopBtnClicked,
+                    child: Text(_buttonText),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(16.0),
+                    ),
+                  ),
+                  RaisedButton(
+                    onPressed: _resetBtnClicked,
+                    child: Text(_textReset),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(16.0),
+                    ),
+                  ),
+                ],
+              ),
             ),
-          ),
-          Expanded(
-            child: FittedBox(
-              fit: BoxFit.none,
-              child: Text(
-                _stopwatchText,
-                style: TextStyle(
-                  fontSize: 72,
+            Expanded(
+              child: FittedBox(
+                fit: BoxFit.none,
+                child: Text(
+                  _stopwatchText,
+                  style: TextStyle(
+                    fontSize: 72,
+                  ),
                 ),
               ),
             ),
-          ),
-        ],
+          ],
+        ),
       ),
     );
   }
@@ -97,10 +140,12 @@ class _HomeWidgetState extends State<HomeWidget> {
       if (_stopWatch.isRunning) {
         _buttonText = _textSTART;
         _stopWatch.stop();
+        _animationController.stop();
       } else {
         _buttonText = _textSTOP;
         _stopWatch.start();
         _startTimeout();
+        _animationController.forward();
       }
     });
   }
