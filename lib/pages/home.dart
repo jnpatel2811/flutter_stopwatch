@@ -1,6 +1,8 @@
 import 'dart:async';
 
 import 'package:flutter/material.dart';
+import 'package:flutter_stopwatch/model/provider_data.dart';
+import 'package:provider/provider.dart';
 
 class HomeWidget extends StatefulWidget {
   @override
@@ -13,7 +15,6 @@ class _HomeWidgetState extends State<HomeWidget>
   static final _textSTART = "Start";
 
   static final _textReset = "Reset";
-  String _stopwatchText = "00:00:00";
 
   String _buttonText = _textSTART;
   final _stopWatch = new Stopwatch();
@@ -57,44 +58,46 @@ class _HomeWidgetState extends State<HomeWidget>
   }
 
   Widget _buildBody() {
-    return Container(
-      color: _colorAnimation.value,
-      child: Padding(
-        padding: const EdgeInsets.all(16.0),
-        child: Column(
-          children: <Widget>[
-            Center(
-              child: Column(
-                children: <Widget>[
-                  RaisedButton(
-                    onPressed: _startStopBtnClicked,
-                    child: Text(_buttonText),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(16.0),
+    return Consumer<ProviderData>(
+      builder: (_, accountData, __) => Container(
+        color: _colorAnimation.value,
+        child: Padding(
+          padding: const EdgeInsets.all(16.0),
+          child: Column(
+            children: <Widget>[
+              Center(
+                child: Column(
+                  children: <Widget>[
+                    RaisedButton(
+                      onPressed: _startStopBtnClicked,
+                      child: Text(_buttonText),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(16.0),
+                      ),
                     ),
-                  ),
-                  RaisedButton(
-                    onPressed: _resetBtnClicked,
-                    child: Text(_textReset),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(16.0),
+                    RaisedButton(
+                      onPressed: _resetBtnClicked,
+                      child: Text(_textReset),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(16.0),
+                      ),
                     ),
-                  ),
-                ],
+                  ],
+                ),
               ),
-            ),
-            Expanded(
-              child: FittedBox(
-                fit: BoxFit.none,
-                child: Text(
-                  _stopwatchText,
-                  style: TextStyle(
-                    fontSize: 72,
+              Expanded(
+                child: FittedBox(
+                  fit: BoxFit.none,
+                  child: Text(
+                    accountData.stopWatchText,
+                    style: TextStyle(
+                      fontSize: 72,
+                    ),
                   ),
                 ),
               ),
-            ),
-          ],
+            ],
+          ),
         ),
       ),
     );
@@ -120,13 +123,14 @@ class _HomeWidgetState extends State<HomeWidget>
   }
 
   void _setStopwatchText() {
-    _stopwatchText = (_stopWatch.elapsed.inMinutes % 60)
-            .toString()
-            .padLeft(2, "0") +
-        ":" +
-        (_stopWatch.elapsed.inSeconds % 60).toString().padLeft(2, "0") +
-        ":" +
-        (_stopWatch.elapsed.inMilliseconds % 100).toString().padLeft(2, "0");
+    Provider.of<ProviderData>(context, listen: false).stopWatchText =
+        (_stopWatch.elapsed.inMinutes % 60).toString().padLeft(2, "0") +
+            ":" +
+            (_stopWatch.elapsed.inSeconds % 60).toString().padLeft(2, "0") +
+            ":" +
+            (_stopWatch.elapsed.inMilliseconds % 100)
+                .toString()
+                .padLeft(2, "0");
   }
 
   void _startStopBtnClicked() {
